@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppConfig } from './configuration/app.config';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -8,8 +9,8 @@ async function bootstrap() {
     {
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://guest:guest@localhost:5672'],
-        queue: 'user_queue',
+        urls: [AppConfig.rabbitMQUri],
+        queue: `${AppConfig.env}_main_queue`,
         queueOptions: {
           durable: true,
         },
@@ -17,7 +18,8 @@ async function bootstrap() {
     }
   );
 
-  app.listen();
-  console.log(`Microservice is running on: ${process.env.PORT || 3001}`);
+  await app.listen();
+  console.log(`Microservice started port ${AppConfig.port} with ${AppConfig.env} environment`);
 }
+
 bootstrap();
